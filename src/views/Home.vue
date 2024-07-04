@@ -1,30 +1,36 @@
 <template>
   <div>
-    <h2>Árfolyamok</h2>
+    <h2>Valuta árfolyamok</h2>
 
-    <table
-      class="table"
-      v-if="exchangeRates && exchangeRates.length > 0"
-    >
-      <thead>
-        <tr>
-          <th>Deviza</th>
-          <th>Vételi árfolyam</th>
-          <th>Középárfolyam</th>
-          <th>Eladási árfolyam</th>
-          <th>Név</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="rate in exchangeRates" :key="rate.currency">
-          <td>{{ rate.currency }}</td>
-          <td>{{ rate.buyRate }}</td>
-          <td>{{ rate.middleRate }}</td>
-          <td>{{ rate.salesRate }}</td>
-          <td>{{ rate.name || "N/A" }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-if="exchangeRates" class="container">
+      <div class="wrapper">
+        <div class="table-container">
+          <div class="table2">
+            <div class="header">
+              <div>Deviza</div>
+              <div>Vételi árfolyam</div>
+              <div>Középárfolyam</div>
+              <div>Eladási árfolyam</div>
+              <div>Név</div>
+            </div>
+
+            <div class="data-wrapper">
+              <div
+                v-for="rate in exchangeRates"
+                :key="rate.currency"
+                class="data"
+              >
+                <div>{{ rate.currency }}</div>
+                <div>{{ rate.buyRate }}</div>
+                <div>{{ rate.middleRate }}</div>
+                <div>{{ rate.salesRate }}</div>
+                <div>{{ rate.name || "N/A" }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div v-else>
       <p>Betöltés...</p>
@@ -61,27 +67,85 @@ export default {
 };
 </script>
 
-<style scoped>
-.table {
-  margin: auto;
+<style>
+.container {
+  width: 100%;
+  height: 82vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wrapper {
   width: 95%;
-  border-collapse: collapse;
-  margin-top: 20px;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
-.table th,
-.table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+.wrapper::-webkit-scrollbar {
+  display: none;
 }
 
-.table th {
-  background-color: #f2f2f2;
+.table-container {
+  max-height: 85%;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
-.table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+.table2 {
+  width: 100%;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: white;
+  z-index: 2;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.header > div {
+  flex: 1;
+  text-align: center;
+}
+
+.data-wrapper {
+  padding: 10px;
+}
+
+.data {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: white;
+  margin-top: 10px;
+}
+
+.data > div {
+  flex: 1;
+  text-align: center;
+}
+
+
+.data:not(:last-child) {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.data:not(:last-child) > div {
+  border-radius: 10px;
 }
 </style>
+
+
 
