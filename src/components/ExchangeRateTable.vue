@@ -10,7 +10,12 @@
       </div>
 
       <div class="data-wrapper">
-        <div v-for="rate in exchangeRates" :key="rate.currency" class="data">
+        <div
+          v-for="rate in exchangeRates"
+          :key="rate.currency"
+          class="data"
+          @click="selectCurrency(rate.currency)"
+        >
           <div>{{ rate.currency }}</div>
           <div>{{ rate.buyRate }}</div>
           <div>{{ rate.middleRate }}</div>
@@ -30,6 +35,11 @@ export default {
       required: true
     }
   },
+  methods: {
+    selectCurrency(currency) {
+      this.$emit('currency-selected', currency);
+    }
+  }
 };
 </script>
 
@@ -47,16 +57,17 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 10px 20px;
   background-color: white;
   z-index: 2;
   border-bottom: 1px solid #ccc;
   margin-bottom: 10px;
 }
 
-.header > div {
+.header div {
   flex: 1;
   text-align: center;
+  font-weight: 600;
 }
 
 .data-wrapper {
@@ -70,18 +81,17 @@ export default {
   padding: 10px;
   background-color: white;
   margin-top: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
 }
 
-.data > div {
+.data:hover {
+  background-color: #f0f0f0;
+}
+
+.data div {
   flex: 1;
   text-align: center;
-}
-
-.data:not(:last-child) {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.data:not(:last-child) > div {
-  border-radius: 10px;
 }
 </style>
