@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Valuta árfolyamok</h2>
+    <h1>Valuta árfolyamok</h1>
 
     <div v-if="exchangeRates" class="container">
       <div class="wrapper">
@@ -9,6 +9,7 @@
           @currency-selected="handleCurrencySelected"
         />
       </div>
+
       <div class="diagram-container">
         <ExchangeRateChart :exchange-rates="selectedCurrencyData" />
       </div>
@@ -41,9 +42,7 @@ export default {
   async mounted() {
     try {
       this.exchangeRates = await fetchExchangeRates();
-      console.log("Exchange rates:", this.exchangeRates);
     } catch (error) {
-      console.error("Error fetching exchange rates:", error);
       this.error = "Hiba a szerverrel való kommunikáció során";
     }
   },
@@ -63,11 +62,12 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .container {
   flex-direction: column;
   width: 100%;
   height: 110vh;
+  min-height: 850px;
   overflow: hidden;
   display: flex;
   justify-content: center;

@@ -1,6 +1,6 @@
 <template>
   <div class="table-container">
-    <div class="table2">
+    <div class="table">
       <div class="header">
         <div>Deviza</div>
         <div>Vételi árfolyam</div>
@@ -44,11 +44,10 @@ export default {
 </script>
 
 <style scoped>
-.table2 {
-  width: 100%;
+.table {
+  width: 98%;
+  margin: auto;
   border-radius: 10px;
-  background-color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .header {
@@ -59,9 +58,7 @@ export default {
   align-items: center;
   padding: 10px 20px;
   background-color: white;
-  z-index: 2;
   border-bottom: 1px solid #ccc;
-  margin-bottom: 10px;
 }
 
 .header div {
@@ -84,6 +81,7 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   cursor: pointer;
+  border: 1px solid #eee;
 }
 
 .data:hover {

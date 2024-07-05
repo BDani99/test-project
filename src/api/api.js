@@ -9,7 +9,6 @@ export async function fetchExchangeRates() {
     const data = await response.json();
     return data.exchangeRates;
   } catch (error) {
-    console.error("Error fetching exchange rates:", error);
     throw new Error("Hiba a szerverrel való kommunikáció során");
   }
 }

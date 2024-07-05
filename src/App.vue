@@ -41,18 +41,4 @@ nav a:not(:last-child) {
   margin-right: 10px;
 }
 
-select,
-input[type="number"] {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-select:focus,
-input[type="number"]:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
 </style>
