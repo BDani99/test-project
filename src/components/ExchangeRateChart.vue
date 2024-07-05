@@ -1,10 +1,11 @@
 <template>
   <div class="chart-container">
-    <h3 v-show="exchangeRates.length">
-      {{ exchangeRates.length > 0 ? exchangeRates[0].name : "" }} árfolyam diagram
+    <h3 v-show="showTitle">
+      {{ exchangeRates.length > 0 ? exchangeRates[0].name : "" }} árfolyam
+      diagram
     </h3>
     <canvas ref="chartCanvas"></canvas>
-    <p v-if="!chartInstance && exchangeRates.length === 0" class="error-message">
+    <p v-if="error && showErrorMessage" class="error-message">
       Hiba a diagram generálása közben
     </p>
   </div>
@@ -25,7 +26,13 @@ export default {
     return {
       chartInstance: null,
       error: false,
+      showErrorMessage: false,
     };
+  },
+  computed: {
+    showTitle() {
+      return this.exchangeRates.length > 0;
+    },
   },
   mounted() {
     this.renderChart();
@@ -40,12 +47,18 @@ export default {
         }));
 
         try {
+          const ctx = this.$refs.chartCanvas?.getContext("2d");
+          if (!ctx) return;
+
           if (this.chartInstance) {
             this.chartInstance.destroy();
           }
 
-          const ctx = this.$refs.chartCanvas.getContext("2d");
-          const labels = ["Vételi árfolyam", "Középárfolyam", "Eladási árfolyam"];
+          const labels = [
+            "Vételi árfolyam",
+            "Középárfolyam",
+            "Eladási árfolyam",
+          ];
           const buyRates = rates.map((rate) => rate.buyRate);
           const middleRates = rates.map((rate) => rate.middleRate);
           const salesRates = rates.map((rate) => rate.salesRate);
@@ -83,9 +96,13 @@ export default {
               },
             },
           });
+
+          this.error = false;
+          this.showErrorMessage = false;
         } catch (error) {
-          console.error("Error rendering chart:", error);
+          ("Error rendering chart:", error);
           this.error = true;
+          this.showErrorMessage = true;
         }
       });
     },

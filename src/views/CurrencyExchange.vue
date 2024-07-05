@@ -3,7 +3,7 @@
     <div v-if="exchangeRates !== null" class="exchange-form">
       <h1>Valutaváltás</h1>
       <div class="form-group">
-        <label for="fromCurrency">Kiinduló valuta:</label>
+        <label for="fromCurrency">Erről a valutáról</label>
         <select id="fromCurrency" v-model="fromCurrency">
           <option
             v-for="currency in exchangeRates.filter((c) => c.name)"
@@ -16,7 +16,18 @@
       </div>
 
       <div class="form-group">
-        <label for="toCurrency">Célpont valuta:</label>
+        <label for="amount">Összeg</label>
+        <input
+          type="number"
+          id="amount"
+          v-model.number="amount"
+          min="0"
+          step="500"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="toCurrency">Ebben a valutában</label>
         <select id="toCurrency" v-model="toCurrency">
           <option
             v-for="currency in exchangeRates.filter((c) => c.name)"
@@ -28,18 +39,7 @@
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="amount">Átváltandó összeg:</label>
-        <input
-          type="number"
-          id="amount"
-          v-model.number="amount"
-          min="0"
-          step="0.01"
-        />
-      </div>
-
-      <button @click="calculateExchange" class="calculate-btn">Számol</button>
+      <button @click="calculateExchange" class="calculate-btn">Mehet</button>
 
       <div class="result" :class="{ visible: exchangeResult !== null }">
         <p v-show="exchangeResult !== null">
@@ -65,7 +65,7 @@ export default {
       exchangeRates: null,
       fromCurrency: null,
       toCurrency: null,
-      amount: 1,
+      amount: null,
       exchangeResult: null,
       error: null,
     };
@@ -73,9 +73,7 @@ export default {
   async mounted() {
     try {
       this.exchangeRates = await fetchExchangeRates();
-      console.log("Exchange rates:", this.exchangeRates);
     } catch (error) {
-      console.error("Error fetching exchange rates:", error);
       this.error = "Hiba a szerverrel való kommunikáció során";
     }
   },
@@ -89,8 +87,12 @@ export default {
       );
 
       if (fromRate && toRate) {
-        const rate = toRate.middleRate / fromRate.middleRate;
-        this.exchangeResult = (this.amount * rate).toFixed(2);
+        if (this.fromCurrency !== this.toCurrency) {
+          const rate = fromRate.middleRate / toRate.middleRate;
+          this.exchangeResult = (this.amount * rate).toFixed(2);
+        } else {
+          this.exchangeResult = this.amount.toFixed(2);
+        }
       } else {
         this.exchangeResult = null;
       }
@@ -101,99 +103,89 @@ export default {
 
 <style scoped>
 .container {
-  height: 500px;
-  max-width: 600px;
-  margin: 50px auto;
-  padding: 25px;
-  background-color: #f7f7f7;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  font-family: "Arial", sans-serif;
-}
-
-h1 {
-  text-align: center;
-  color: #333;
+  display: flex;
+  justify-content: center;
+  height: 475px;
+  margin-top: 50px;
 }
 
 .exchange-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  background: white;
+  padding: 20px 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  background: #f7f7f779;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #4a4a4a;
+  font-size: 24px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group select {
-  width: 395px;
-  text-align: center;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 123, 255, 0.6) rgba(0, 0, 0, 0.1);
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  margin-bottom: 15px;
+  text-align: left;
 }
 
 label {
+  display: block;
   margin-bottom: 5px;
+  font-weight: bold;
   color: #555;
 }
 
-.calculate-btn {
+select,
+input[type="number"] {
+  width: 100%;
   padding: 10px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
+  border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  box-sizing: border-box;
 }
 
-.calculate-btn:hover {
+button.calculate-btn {
+  background: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+button.calculate-btn:hover {
   background-color: #0056b3;
 }
 
 .result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #e7e7e7;
-  border-radius: 10px;
-  min-height: 24px;
+  border-radius: 6px;
   visibility: hidden;
-  max-width: 395px;
+  height: 36px;
+  margin-top: 20px;
 }
 
 .result.visible {
   visibility: visible;
 }
 
-.result p {
-  text-align: center;
-  font-size: 18px;
-  color: #333;
-}
-
 .loading {
   text-align: center;
   font-size: 18px;
-  color: #999;
+  color: #777;
+}
+
+.error {
+  color: red;
 }
 </style>
