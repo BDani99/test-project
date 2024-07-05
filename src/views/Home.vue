@@ -4,8 +4,13 @@
 
     <div v-if="exchangeRates" class="container">
       <div class="wrapper">
-        <ExchangeRateTable :exchange-rates="exchangeRates" />
-        <ExchangeRateChart :exchange-rates="exchangeRates" />
+        <ExchangeRateTable
+          :exchange-rates="exchangeRates"
+          @currency-selected="handleCurrencySelected"
+        />
+      </div>
+      <div class="diagram-container">
+        <ExchangeRateChart :exchange-rates="selectedCurrencyData" />
       </div>
     </div>
 
@@ -17,7 +22,7 @@
 
 <script>
 import ExchangeRateTable from "../components/ExchangeRateTable.vue";
-import ExchangeRateChart from "../components/ExchangeRateChart.vue"; 
+import ExchangeRateChart from "../components/ExchangeRateChart.vue";
 import { fetchExchangeRates } from "../api/api.js";
 
 export default {
@@ -28,6 +33,7 @@ export default {
   data() {
     return {
       exchangeRates: null,
+      selectedCurrency: "",
     };
   },
   async mounted() {
@@ -38,27 +44,59 @@ export default {
       console.error("Error fetching exchange rates:", error);
     }
   },
+  methods: {
+    handleCurrencySelected(currency) {
+      this.selectedCurrency = currency;
+    },
+  },
+  computed: {
+    selectedCurrencyData() {
+      if (!this.exchangeRates || !this.selectedCurrency) return [];
+      return this.exchangeRates.filter(
+        (rate) => rate.currency === this.selectedCurrency
+      );
+    },
+  },
 };
 </script>
 
 <style>
 .container {
+  flex-direction: column;
   width: 100%;
-  height: 82vh;
+  height: 110vh;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+.diagram-container {
+  margin-top: 30px;
+  width: 100%;
+}
+
 .wrapper {
   width: 95%;
   height: 100%;
   overflow-y: auto;
-  scrollbar-width: none;
 }
 
 .wrapper::-webkit-scrollbar {
-  display: none;
+  width: 10px;
+}
+
+.wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.wrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>

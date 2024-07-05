@@ -1,9 +1,9 @@
 <template>
   <nav>
-    <router-link to="/">Főoldal</router-link> |
+    <router-link to="/">Főoldal</router-link>
     <router-link :to="{ name: 'currencyExchange' }">Valutaváltás</router-link>
   </nav>
-  <router-view/>
+  <router-view />
 </template>
 
 <style>
@@ -16,15 +16,43 @@
 }
 
 nav {
-  padding: 30px;
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 45px;
+  margin-top: 20px;
 }
 
 nav a {
   font-weight: bold;
   color: #2c3e50;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
 
 nav a.router-link-exact-active {
-  color: #42b983;
+  background-color: #42b983;
+  color: white;
 }
+
+nav a:not(:last-child) {
+  position: relative;
+  margin-right: 10px;
+}
+
+select,
+input[type="number"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+select:focus,
+input[type="number"]:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
 </style>
