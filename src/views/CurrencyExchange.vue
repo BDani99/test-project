@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div v-if="exchangeRates" class="exchange-form">
+    <div v-if="exchangeRates !== null" class="exchange-form">
       <h1>Valutaváltás</h1>
       <div class="form-group">
         <label for="fromCurrency">Kiinduló valuta:</label>
@@ -50,7 +50,8 @@
     </div>
 
     <div v-else class="loading">
-      <p>Betöltés...</p>
+      <p v-if="error">{{ error }}</p>
+      <p v-else>Betöltés...</p>
     </div>
   </div>
 </template>
@@ -66,6 +67,7 @@ export default {
       toCurrency: null,
       amount: 1,
       exchangeResult: null,
+      error: null,
     };
   },
   async mounted() {
@@ -74,6 +76,7 @@ export default {
       console.log("Exchange rates:", this.exchangeRates);
     } catch (error) {
       console.error("Error fetching exchange rates:", error);
+      this.error = "Hiba a szerverrel való kommunikáció során";
     }
   },
   methods: {

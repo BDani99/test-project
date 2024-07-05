@@ -1,10 +1,12 @@
 <template>
   <div class="chart-container">
     <h3 v-show="exchangeRates.length">
-      {{ exchangeRates.length > 0 ? exchangeRates[0].name : "" }} árfolyam
-      diagram
+      {{ exchangeRates.length > 0 ? exchangeRates[0].name : "" }} árfolyam diagram
     </h3>
     <canvas ref="chartCanvas"></canvas>
+    <p v-if="!chartInstance && exchangeRates.length === 0" class="error-message">
+      Hiba a diagram generálása közben
+    </p>
   </div>
 </template>
 
@@ -22,6 +24,7 @@ export default {
   data() {
     return {
       chartInstance: null,
+      error: false,
     };
   },
   mounted() {
@@ -36,49 +39,54 @@ export default {
           ...rate,
         }));
 
-        if (this.chartInstance) {
-          this.chartInstance.destroy();
-        }
+        try {
+          if (this.chartInstance) {
+            this.chartInstance.destroy();
+          }
 
-        const ctx = this.$refs.chartCanvas.getContext("2d");
-        const labels = ["Vételi árfolyam", "Középárfolyam", "Eladási árfolyam"];
-        const buyRates = rates.map((rate) => rate.buyRate);
-        const middleRates = rates.map((rate) => rate.middleRate);
-        const salesRates = rates.map((rate) => rate.salesRate);
+          const ctx = this.$refs.chartCanvas.getContext("2d");
+          const labels = ["Vételi árfolyam", "Középárfolyam", "Eladási árfolyam"];
+          const buyRates = rates.map((rate) => rate.buyRate);
+          const middleRates = rates.map((rate) => rate.middleRate);
+          const salesRates = rates.map((rate) => rate.salesRate);
 
-        const buyRate = buyRates[0];
-        const middleRate = middleRates[0];
-        const salesRate = salesRates[0];
+          const buyRate = buyRates[0];
+          const middleRate = middleRates[0];
+          const salesRate = salesRates[0];
 
-        const minRate = Math.min(buyRate, middleRate, salesRate);
-        const maxRate = Math.max(buyRate, middleRate, salesRate);
+          const minRate = Math.min(buyRate, middleRate, salesRate);
+          const maxRate = Math.max(buyRate, middleRate, salesRate);
 
-        this.chartInstance = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: "Árfolyam értékek",
-                data: [buyRate, middleRate, salesRate],
-                backgroundColor: [
-                  "rgb(255, 99, 132)",
-                  "rgb(54, 162, 235)",
-                  "rgb(75, 192, 192)",
-                ],
-              },
-            ],
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: false,
-                min: minRate * 0.95,
-                max: maxRate * 1.05,
+          this.chartInstance = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Árfolyam értékek",
+                  data: [buyRate, middleRate, salesRate],
+                  backgroundColor: [
+                    "rgb(255, 99, 132)",
+                    "rgb(54, 162, 235)",
+                    "rgb(75, 192, 192)",
+                  ],
+                },
+              ],
+            },
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  min: minRate * 0.95,
+                  max: maxRate * 1.05,
+                },
               },
             },
-          },
-        });
+          });
+        } catch (error) {
+          console.error("Error rendering chart:", error);
+          this.error = true;
+        }
       });
     },
   },
@@ -105,5 +113,11 @@ canvas {
   width: 100% !important;
   height: 400px !important;
   margin-bottom: 20px;
+}
+
+.error-message {
+  color: red;
+  text-align: center;
+  margin-top: 10px;
 }
 </style>

@@ -15,7 +15,8 @@
     </div>
 
     <div v-else>
-      <p>Betöltés...</p>
+      <p v-if="error">{{ error }}</p>
+      <p v-else>Betöltés...</p>
     </div>
   </div>
 </template>
@@ -34,6 +35,7 @@ export default {
     return {
       exchangeRates: null,
       selectedCurrency: "",
+      error: null,
     };
   },
   async mounted() {
@@ -42,6 +44,7 @@ export default {
       console.log("Exchange rates:", this.exchangeRates);
     } catch (error) {
       console.error("Error fetching exchange rates:", error);
+      this.error = "Hiba a szerverrel való kommunikáció során";
     }
   },
   methods: {
