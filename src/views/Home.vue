@@ -11,7 +11,10 @@
       </div>
 
       <div class="diagram-container">
-        <ExchangeRateChart :exchange-rates="selectedCurrencyData" />
+        <ExchangeRateChart
+          :selected-currency="selectedCurrency"
+          :exchange-rates="exchangeRates"
+        />
       </div>
     </div>
 
@@ -37,11 +40,20 @@ export default {
       exchangeRates: null,
       selectedCurrency: "",
       error: null,
+      fromDate: "",
+      toDate: "",
     };
   },
   async mounted() {
     try {
-      this.exchangeRates = await fetchExchangeRates();
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+
+      this.toDate = formatDate(today);
+      this.fromDate = formatDate(yesterday);
+
+      this.exchangeRates = await fetchExchangeRates(this.fromDate, this.toDate);
     } catch (error) {
       this.error = "Hiba a szerverrel való kommunikáció során";
     }
@@ -60,13 +72,20 @@ export default {
     },
   },
 };
+
+function formatDate(date) {
+  const year = date.getUTCFullYear();
+  const month = `0${date.getUTCMonth() + 1}`.slice(-2);
+  const day = `0${date.getUTCDate()}`.slice(-2);
+  return `${year}-${month}-${day}`;
+}
 </script>
 
 <style scoped>
 .container {
   flex-direction: column;
   width: 100%;
-  height: 110vh;
+  height: 100vh;
   min-height: 850px;
   overflow: hidden;
   display: flex;
@@ -81,7 +100,7 @@ export default {
 
 .wrapper {
   width: 95%;
-  height: 100%;
+  height: 75%;
   overflow-y: auto;
 }
 

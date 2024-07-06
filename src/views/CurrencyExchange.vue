@@ -72,7 +72,14 @@ export default {
   },
   async mounted() {
     try {
-      this.exchangeRates = await fetchExchangeRates();
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+
+      this.toDate = formatDate(today);
+      this.fromDate = formatDate(yesterday);
+
+      this.exchangeRates = await fetchExchangeRates(this.fromDate, this.toDate);
     } catch (error) {
       this.error = "Hiba a szerverrel való kommunikáció során";
     }
@@ -89,7 +96,10 @@ export default {
       if (fromRate && toRate) {
         if (this.fromCurrency !== this.toCurrency) {
           const rate = fromRate.middleRate / toRate.middleRate;
-          this.exchangeResult = (this.amount * rate).toFixed(2);
+          this.exchangeResult = (
+            ((this.amount * rate) / fromRate.unit) *
+            toRate.unit
+          ).toFixed(4);
         } else {
           this.exchangeResult = this.amount.toFixed(2);
         }
@@ -99,6 +109,13 @@ export default {
     },
   },
 };
+
+function formatDate(date) {
+  const year = date.getUTCFullYear();
+  const month = `0${date.getUTCMonth() + 1}`.slice(-2);
+  const day = `0${date.getUTCDate()}`.slice(-2);
+  return `${year}-${month}-${day}`;
+}
 </script>
 
 <style scoped>
