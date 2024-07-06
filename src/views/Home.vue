@@ -30,6 +30,7 @@
 import ExchangeRateTable from "../components/ExchangeRateTable.vue";
 import ExchangeRateChart from "../components/ExchangeRateChart.vue";
 import { fetchExchangeRates } from "../api/api.js";
+import { getYesterday, calculateDateDifference } from "../utils/DateUtils.js";
 
 export default {
   components: {
@@ -48,12 +49,10 @@ export default {
   },
   async mounted() {
     try {
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
+      const yesterday = getYesterday();
 
-      this.toDate = formatDate(today);
-      this.fromDate = formatDate(yesterday);
+      this.toDate = yesterday;
+      this.fromDate = yesterday;
 
       this.exchangeRates = await fetchExchangeRates(this.fromDate, this.toDate);
     } catch (error) {
@@ -69,14 +68,9 @@ export default {
       if (!fromDate || !toDate || !this.selectedCurrency) return;
 
       try {
-        const from = new Date(fromDate);
-        const to = new Date(toDate);
+        const diffDays = calculateDateDifference(fromDate, toDate);
 
         const dailyDataCount = 18;
-
-        const diffTime = to.getTime() - from.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
         const size = diffDays * dailyDataCount;
 
         const exchangeRates = await fetchExchangeRates(fromDate, toDate, size);
@@ -106,26 +100,6 @@ export default {
     },
   },
 };
-
-function formatDate(date) {
-  const year = date.getUTCFullYear();
-  const month = ("0" + (date.getUTCMonth() + 1)).slice(-2);
-  const day = ("0" + date.getUTCDate()).slice(-2);
-  return `${year}-${month}-${day}`;
-}
 </script>
 
-<style scoped>
-.container {
-  flex-direction: column;
-  width: 100%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-}
-
-.diagram-container {
-  margin-top: 30px;
-  width: 100%;
-}
-</style>
+<style scoped src='../styles/Home.css'></style>

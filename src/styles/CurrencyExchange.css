@@ -1,0 +1,86 @@
+.container {
+    display: flex;
+    justify-content: center;
+    height: 475px;
+    margin-top: 50px;
+}
+
+.exchange-form {
+    background: white;
+    padding: 20px 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    background: #f7f7f779;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #4a4a4a;
+    font-size: 24px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+select,
+input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+button.calculate-btn {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+button.calculate-btn:hover {
+    background-color: #0056b3;
+}
+
+.result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e7e7e7;
+    border-radius: 6px;
+    visibility: hidden;
+    height: 36px;
+    margin-top: 20px;
+}
+
+.result.visible {
+    visibility: visible;
+}
+
+.loading {
+    text-align: center;
+    font-size: 18px;
+    color: #777;
+}
+
+.error {
+    color: red;
+}

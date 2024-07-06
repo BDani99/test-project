@@ -58,6 +58,8 @@
 
 <script>
 import { fetchExchangeRates } from "../api/api.js";
+import { getYesterday } from "../utils/DateUtils.js";
+import { calculateExchange } from "../utils/ExchangeUtils.js";
 
 export default {
   data() {
@@ -72,12 +74,10 @@ export default {
   },
   async mounted() {
     try {
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
+      const yesterday = getYesterday();
 
-      this.toDate = formatDate(today);
-      this.fromDate = formatDate(yesterday);
+      this.toDate = yesterday;
+      this.fromDate = yesterday;
 
       this.exchangeRates = await fetchExchangeRates(this.fromDate, this.toDate);
     } catch (error) {
@@ -86,123 +86,15 @@ export default {
   },
   methods: {
     calculateExchange() {
-      const fromRate = this.exchangeRates.find(
-        (rate) => rate.currency === this.fromCurrency
+      this.exchangeResult = calculateExchange(
+        this.exchangeRates,
+        this.fromCurrency,
+        this.toCurrency,
+        this.amount
       );
-      const toRate = this.exchangeRates.find(
-        (rate) => rate.currency === this.toCurrency
-      );
-
-      if (fromRate && toRate) {
-        if (this.fromCurrency !== this.toCurrency) {
-          const rate = fromRate.middleRate / toRate.middleRate;
-          this.exchangeResult = (
-            ((this.amount * rate) / fromRate.unit) *
-            toRate.unit
-          ).toFixed(4);
-        } else {
-          this.exchangeResult = this.amount.toFixed(2);
-        }
-      } else {
-        this.exchangeResult = null;
-      }
     },
   },
 };
-
-function formatDate(date) {
-  const year = date.getUTCFullYear();
-  const month = `0${date.getUTCMonth() + 1}`.slice(-2);
-  const day = `0${date.getUTCDate()}`.slice(-2);
-  return `${year}-${month}-${day}`;
-}
 </script>
 
-<style scoped>
-.container {
-  display: flex;
-  justify-content: center;
-  height: 475px;
-  margin-top: 50px;
-}
-
-.exchange-form {
-  background: white;
-  padding: 20px 40px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  background: #f7f7f779;
-}
-
-h1 {
-  margin-bottom: 20px;
-  color: #4a4a4a;
-  font-size: 24px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-  text-align: left;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
-}
-
-select,
-input[type="number"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-button.calculate-btn {
-  background: #007bff;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-top: 20px;
-  width: 100%;
-}
-
-button.calculate-btn:hover {
-  background-color: #0056b3;
-}
-
-.result {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #e7e7e7;
-  border-radius: 6px;
-  visibility: hidden;
-  height: 36px;
-  margin-top: 20px;
-}
-
-.result.visible {
-  visibility: visible;
-}
-
-.loading {
-  text-align: center;
-  font-size: 18px;
-  color: #777;
-}
-
-.error {
-  color: red;
-}
-</style>
+<style scoped src='../styles/CurrencyExchange.css'></style>
