@@ -1,5 +1,5 @@
 <template>
-  <div class="table-container">
+  <div class="wrapper">
     <div class="table">
       <div class="header">
         <div>Deviza</div>
@@ -32,22 +32,46 @@ export default {
   props: {
     exchangeRates: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
   },
   methods: {
     selectCurrency(currency) {
-      this.$emit('currency-selected', currency);
-    }
-  }
+      this.$emit("currency-selected", currency);
+    },
+  },
 };
 </script>
 
 <style scoped>
+.wrapper {
+  width: 95%;
+  height: 65vh;
+  min-height: 400px;
+  overflow-y: auto;
+}
+
+.wrapper::-webkit-scrollbar {
+  width: 10px;
+}
+
+.wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.wrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 .table {
   width: 98%;
   margin: auto;
-  border-radius: 10px;
 }
 
 .header {

@@ -1,36 +1,40 @@
 <template>
   <div class="chart-container" v-if="selectedCurrency">
-    <h2>{{ selectedCurrency }} árfolyam diagram</h2>
+    <h2>{{ selectedCurrencyName }} árfolyam diagram</h2>
 
     <div class="date-pickers">
       <div class="field">
-        <label class="label" for="fromDate">Kezdő dátum:</label>
+        <label class="label" for="fromDate">Kezdő dátum</label>
         <div class="control">
           <input
             class="input"
             type="date"
             id="fromDate"
-            v-model="fromDate"
-            @change="fetchData"
+            v-model="internalFromDate"
+            @change="onDateChange"
           />
         </div>
       </div>
 
       <div class="field">
-        <label class="label" for="toDate">Végdátum:</label>
+        <label class="label" for="toDate">Végdátum</label>
         <div class="control">
           <input
             class="input"
             type="date"
             id="toDate"
-            v-model="toDate"
-            @change="fetchData"
+            v-model="internalToDate"
+            @change="onDateChange"
+            :max="getMaxToDate()"
           />
         </div>
       </div>
     </div>
 
-    <div v-if="selectedCurrency && selectedCurrencyData.length > 0" class="chart-area">
+    <div
+      v-if="selectedCurrency && selectedCurrencyData.length > 0"
+      class="chart-area"
+    >
       <canvas id="exchangeRateChart" ref="exchangeRateChart"></canvas>
     </div>
 
@@ -39,7 +43,6 @@
 </template>
 
 <script>
-import { fetchExchangeRates } from "../api/api.js";
 import Chart from "chart.js/auto";
 
 export default {
@@ -52,93 +55,89 @@ export default {
       type: Array,
       required: true,
     },
+    fromDate: {
+      type: String,
+      required: true,
+    },
+    toDate: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
-      fromDate: "",
-      toDate: "",
-      selectedCurrencyData: [],
+      internalFromDate: this.fromDate,
+      internalToDate: this.toDate,
+      selectedCurrencyData: this.exchangeRates,
       chartInstance: null,
     };
   },
+  watch: {
+    selectedCurrency(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.resetData();
+      }
+    },
+    exchangeRates(newVal) {
+      this.selectedCurrencyData = newVal;
+      this.renderChart();
+    },
+  },
   computed: {
+    selectedCurrencyName() {
+      const currencyData = this.selectedCurrencyData.find(
+        (rate) => rate.currency === this.selectedCurrency
+      );
+      return currencyData ? currencyData.name : "";
+    },
     chartData() {
+      const sortedData = this.selectedCurrencyData.sort((a, b) => {
+        return new Date(a.date) - new Date(b.date);
+      });
+
       return {
-        labels: this.selectedCurrencyData.map((rate) => rate.date),
+        labels: sortedData.map((rate) => rate.date),
         datasets: [
           {
             label: "Középárfolyam",
             backgroundColor: "rgba(75, 192, 192, 0.2)",
             borderColor: "rgba(75, 192, 192, 1)",
             borderWidth: 1,
-            data: this.selectedCurrencyData.map((rate) => rate.middleRate),
+            data: sortedData.map((rate) => rate.middleRate),
           },
           {
             label: "Eladási árfolyam",
             backgroundColor: "rgba(255, 99, 132, 0.2)",
             borderColor: "rgba(255, 99, 132, 1)",
             borderWidth: 1,
-            data: this.selectedCurrencyData.map((rate) => rate.sellRate),
+            data: sortedData.map((rate) => rate.sellRate),
           },
           {
             label: "Vételi árfolyam",
             backgroundColor: "rgba(54, 162, 235, 0.2)",
             borderColor: "rgba(54, 162, 235, 1)",
             borderWidth: 1,
-            data: this.selectedCurrencyData.map((rate) => rate.buyRate),
+            data: sortedData.map((rate) => rate.buyRate),
           },
         ],
       };
     },
   },
-  watch: {
-    selectedCurrency: "resetData",
-  },
   methods: {
     resetData() {
-      this.fromDate = "";
-      this.toDate = "";
+      this.internalFromDate = "";
+      this.internalToDate = "";
       this.selectedCurrencyData = [];
       if (this.chartInstance) {
         this.chartInstance.destroy();
       }
     },
-    async fetchData() {
-      if (!this.fromDate || !this.toDate || !this.selectedCurrency) return;
-
-      try {
-        const from = new Date(this.fromDate);
-        const to = new Date(this.toDate);
-
-        // Naponta érkező adatok száma (pl. 18)
-        const dailyDataCount = 18;
-
-        // Számítjuk a két dátum közötti napok számát, beleértve a kezdő és végdátumot is
-        const diffTime = to.getTime() - from.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-        const size = diffDays * dailyDataCount;
-
-        const exchangeRates = await fetchExchangeRates(
-          this.fromDate,
-          this.toDate,
-          size
-        );
-
-        this.selectedCurrencyData = exchangeRates
-          .filter((rate) => rate.currency === this.selectedCurrency)
-          .map((rate) => ({
-            ...rate,
-            sellRate: rate.salesRate,
-            buyRate: rate.buyRate,
-          }));
-
-        this.renderChart();
-      } catch (error) {
-        console.error("Hiba a szerverrel való kommunikáció során:", error);
+    onDateChange() {
+      if (new Date(this.internalToDate) > new Date()) {
+        this.internalToDate = this.getMaxToDate();
       }
+      this.$emit("fetch-data", this.internalFromDate, this.internalToDate);
     },
-
     renderChart() {
       this.$nextTick(() => {
         if (!this.$refs.exchangeRateChart) return;
@@ -181,6 +180,22 @@ export default {
           },
         });
       });
+    },
+    getMaxToDate() {
+      const today = new Date();
+      const year = today.getFullYear();
+      let month = today.getMonth() + 1;
+      let day = today.getDate();
+
+      if (month < 10) {
+        month = `0${month}`;
+      }
+
+      if (day < 10) {
+        day = `0${day}`;
+      }
+
+      return `${year}-${month}-${day}`;
     },
   },
 };

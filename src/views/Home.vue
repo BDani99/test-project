@@ -3,17 +3,18 @@
     <h1>Valuta árfolyamok</h1>
 
     <div v-if="exchangeRates" class="container">
-      <div class="wrapper">
-        <ExchangeRateTable
-          :exchange-rates="exchangeRates"
-          @currency-selected="handleCurrencySelected"
-        />
-      </div>
+      <ExchangeRateTable
+        :exchange-rates="exchangeRates"
+        @currency-selected="handleCurrencySelected"
+      />
 
       <div class="diagram-container">
         <ExchangeRateChart
           :selected-currency="selectedCurrency"
-          :exchange-rates="exchangeRates"
+          :exchange-rates="filteredExchangeRates"
+          :from-date="fromDate"
+          :to-date="toDate"
+          @fetch-data="fetchData"
         />
       </div>
     </div>
@@ -42,6 +43,7 @@ export default {
       error: null,
       fromDate: "",
       toDate: "",
+      selectedCurrencyRates: [],
     };
   },
   async mounted() {
@@ -61,22 +63,54 @@ export default {
   methods: {
     handleCurrencySelected(currency) {
       this.selectedCurrency = currency;
+      this.updateSelectedCurrencyRates();
+    },
+    async fetchData(fromDate, toDate) {
+      if (!fromDate || !toDate || !this.selectedCurrency) return;
+
+      try {
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
+
+        const dailyDataCount = 18;
+
+        const diffTime = to.getTime() - from.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        const size = diffDays * dailyDataCount;
+
+        const exchangeRates = await fetchExchangeRates(fromDate, toDate, size);
+
+        this.selectedCurrencyRates = exchangeRates
+          .filter((rate) => rate.currency === this.selectedCurrency)
+          .map((rate) => ({
+            ...rate,
+            sellRate: rate.salesRate,
+            buyRate: rate.buyRate,
+          }));
+      } catch (error) {
+        console.error("Hiba a szerverrel való kommunikáció során:", error);
+      }
+    },
+    updateSelectedCurrencyRates() {
+      if (!this.selectedCurrency) return;
+
+      this.selectedCurrencyRates = this.exchangeRates.filter(
+        (rate) => rate.currency === this.selectedCurrency
+      );
     },
   },
   computed: {
-    selectedCurrencyData() {
-      if (!this.exchangeRates || !this.selectedCurrency) return [];
-      return this.exchangeRates.filter(
-        (rate) => rate.currency === this.selectedCurrency
-      );
+    filteredExchangeRates() {
+      return this.selectedCurrencyRates;
     },
   },
 };
 
 function formatDate(date) {
   const year = date.getUTCFullYear();
-  const month = `0${date.getUTCMonth() + 1}`.slice(-2);
-  const day = `0${date.getUTCDate()}`.slice(-2);
+  const month = ("0" + (date.getUTCMonth() + 1)).slice(-2);
+  const day = ("0" + date.getUTCDate()).slice(-2);
   return `${year}-${month}-${day}`;
 }
 </script>
@@ -85,40 +119,13 @@ function formatDate(date) {
 .container {
   flex-direction: column;
   width: 100%;
-  height: 100vh;
-  min-height: 850px;
   overflow: hidden;
   display: flex;
-  justify-content: center;
   align-items: center;
 }
 
 .diagram-container {
   margin-top: 30px;
   width: 100%;
-}
-
-.wrapper {
-  width: 95%;
-  height: 75%;
-  overflow-y: auto;
-}
-
-.wrapper::-webkit-scrollbar {
-  width: 10px;
-}
-
-.wrapper::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.wrapper::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 10px;
-}
-
-.wrapper::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }
 </style>
