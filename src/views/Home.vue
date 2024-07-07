@@ -30,7 +30,7 @@
 import ExchangeRateTable from "../components/ExchangeRateTable.vue";
 import ExchangeRateChart from "../components/ExchangeRateChart.vue";
 import { fetchExchangeRates } from "../api/api.js";
-import { getYesterday, calculateDateDifference } from "../utils/DateUtils.js";
+import { getLastWorkday, calculateDateDifference } from "../utils/DateUtils.js";
 
 export default {
   components: {
@@ -49,10 +49,10 @@ export default {
   },
   async mounted() {
     try {
-      const yesterday = getYesterday();
+      const lastWorkday = getLastWorkday();
 
-      this.toDate = yesterday;
-      this.fromDate = yesterday;
+      this.toDate = lastWorkday;
+      this.fromDate = lastWorkday;
 
       this.exchangeRates = await fetchExchangeRates(this.fromDate, this.toDate);
     } catch (error) {

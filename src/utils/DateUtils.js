@@ -1,8 +1,17 @@
-export function getYesterday() {
+export function getLastWorkday() {
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    return formatDate(yesterday);
+    let dayOfWeek = today.getDay();
+    let daysToSubtract = 0;
+
+    if (dayOfWeek === 0) {
+        daysToSubtract = 2;
+    } else if (dayOfWeek === 6) {
+        daysToSubtract = 1;
+    }
+
+    today.setDate(today.getDate() - daysToSubtract);
+
+    return formatDate(today);
 }
 
 export function getMaxToDate() {

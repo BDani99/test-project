@@ -58,7 +58,7 @@
 
 <script>
 import { fetchExchangeRates } from "../api/api.js";
-import { getYesterday } from "../utils/DateUtils.js";
+import { getLastWorkday } from "../utils/DateUtils.js";
 import { calculateExchange } from "../utils/ExchangeUtils.js";
 
 export default {
@@ -74,15 +74,26 @@ export default {
   },
   async mounted() {
     try {
-      const yesterday = getYesterday();
+      const lastWorkday = getLastWorkday();
 
-      this.toDate = yesterday;
-      this.fromDate = yesterday;
+      this.toDate = lastWorkday;
+      this.fromDate = lastWorkday;
 
       this.exchangeRates = await fetchExchangeRates(this.fromDate, this.toDate);
     } catch (error) {
       this.error = "Hiba a szerverrel való kommunikáció során";
     }
+  },
+  watch: {
+    fromCurrency() {
+      this.exchangeResult = null;
+    },
+    toCurrency() {
+      this.exchangeResult = null;
+    },
+    amount() {
+      this.exchangeResult = null;
+    },
   },
   methods: {
     calculateExchange() {
